@@ -1,5 +1,5 @@
 /*
- * Copyright 2025-2026 DiffPlug
+ * Copyright 2025 DiffPlug
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,22 +35,17 @@ public class ExpandWildcardImports implements FormatterStepFactory {
 		MavenProject project = config.getProject();
 		Set<File> typeSolverClasspath = new HashSet<>();
 
-		// Add source directories
-		String sourceDirectory = project.getBuild().getSourceDirectory();
-		if (sourceDirectory != null) {
-			File sourceDir = new File(sourceDirectory);
-			if (sourceDir.exists()) {
-				typeSolverClasspath.add(sourceDir);
-			}
-		}
+		// Add all main source roots
+		project.getCompileSourceRoots().stream()
+				.map(File::new)
+				.filter(File::exists)
+				.forEach(typeSolverClasspath::add);
 
-		String testSourceDirectory = project.getBuild().getTestSourceDirectory();
-		if (testSourceDirectory != null) {
-			File testSourceDir = new File(testSourceDirectory);
-			if (testSourceDir.exists()) {
-				typeSolverClasspath.add(testSourceDir);
-			}
-		}
+		// Add all test source roots
+		project.getTestCompileSourceRoots().stream()
+				.map(File::new)
+				.filter(File::exists)
+				.forEach(typeSolverClasspath::add);
 
 		// Add compiled dependencies
 		project.getArtifacts().stream()
