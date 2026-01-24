@@ -15,8 +15,10 @@
  */
 package com.diffplug.spotless.maven;
 
+import java.io.File;
 import java.nio.charset.Charset;
 import java.util.Optional;
+import java.util.Set;
 
 import com.diffplug.spotless.Provisioner;
 
@@ -28,14 +30,16 @@ public class FormatterStepConfig {
 	private final Provisioner provisioner;
 	private final FileLocator fileLocator;
 	private final Optional<String> spotlessSetLicenseHeaderYearsFromGitHistory;
+	private final Optional<Set<File>> projectClasspath;
 
-	public FormatterStepConfig(Charset encoding, String licenseHeaderDelimiter, Optional<String> ratchetFrom, Provisioner provisioner, FileLocator fileLocator, Optional<String> spotlessSetLicenseHeaderYearsFromGitHistory) {
+	public FormatterStepConfig(Charset encoding, String licenseHeaderDelimiter, Optional<String> ratchetFrom, Provisioner provisioner, FileLocator fileLocator, Optional<String> spotlessSetLicenseHeaderYearsFromGitHistory, Optional<Set<File>> projectClasspath) {
 		this.encoding = encoding;
 		this.licenseHeaderDelimiter = licenseHeaderDelimiter;
 		this.ratchetFrom = ratchetFrom;
 		this.provisioner = provisioner;
 		this.fileLocator = fileLocator;
 		this.spotlessSetLicenseHeaderYearsFromGitHistory = spotlessSetLicenseHeaderYearsFromGitHistory;
+		this.projectClasspath = projectClasspath;
 	}
 
 	public Charset getEncoding() {
@@ -60,5 +64,9 @@ public class FormatterStepConfig {
 
 	public Optional<String> spotlessSetLicenseHeaderYearsFromGitHistory() {
 		return spotlessSetLicenseHeaderYearsFromGitHistory;
+	}
+
+	public Optional<Set<File>> getProjectClasspath() {
+		return projectClasspath;
 	}
 }

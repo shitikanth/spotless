@@ -20,6 +20,9 @@ import static java.util.Collections.unmodifiableList;
 import java.io.File;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+
+import org.apache.maven.project.MavenProject;
 
 import com.diffplug.spotless.LineEnding;
 import com.diffplug.spotless.LintSuppression;
@@ -35,9 +38,10 @@ public class FormatterConfig {
 	private final List<FormatterStepFactory> globalStepFactories;
 	private final Optional<String> spotlessSetLicenseHeaderYearsFromGitHistory;
 	private final List<LintSuppression> lintSuppressions;
+	private final Optional<MavenProject> mavenProject;
 
 	public FormatterConfig(File baseDir, String encoding, LineEnding lineEndings, Optional<String> ratchetFrom, Provisioner provisioner,
-			FileLocator fileLocator, List<FormatterStepFactory> globalStepFactories, Optional<String> spotlessSetLicenseHeaderYearsFromGitHistory, List<LintSuppression> lintSuppressions) {
+			FileLocator fileLocator, List<FormatterStepFactory> globalStepFactories, Optional<String> spotlessSetLicenseHeaderYearsFromGitHistory, List<LintSuppression> lintSuppressions, Optional<MavenProject> mavenProject) {
 		this.encoding = encoding;
 		this.lineEndings = lineEndings;
 		this.ratchetFrom = ratchetFrom;
@@ -46,6 +50,7 @@ public class FormatterConfig {
 		this.globalStepFactories = globalStepFactories;
 		this.spotlessSetLicenseHeaderYearsFromGitHistory = spotlessSetLicenseHeaderYearsFromGitHistory;
 		this.lintSuppressions = lintSuppressions;
+		this.mavenProject = mavenProject;
 	}
 
 	public String getEncoding() {
@@ -78,5 +83,9 @@ public class FormatterConfig {
 
 	public List<LintSuppression> getLintSuppressions() {
 		return unmodifiableList(lintSuppressions);
+	}
+
+	public Optional<MavenProject> getMavenProject() {
+		return mavenProject;
 	}
 }

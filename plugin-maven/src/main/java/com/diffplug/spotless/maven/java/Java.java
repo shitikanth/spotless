@@ -20,13 +20,18 @@ import static java.util.stream.Collectors.toSet;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.model.Build;
 import org.apache.maven.project.MavenProject;
 
 import com.diffplug.spotless.generic.LicenseHeaderStep;
+import com.diffplug.spotless.maven.FormatterConfig;
 import com.diffplug.spotless.maven.FormatterFactory;
 import com.diffplug.spotless.maven.generic.LicenseHeader;
 
@@ -80,6 +85,10 @@ public class Java extends FormatterFactory {
 		addStepFactory(forbidWildcardImports);
 	}
 
+	public void addExpandWildcardImports(ExpandWildcardImports expandWildcardImports) {
+		addStepFactory(expandWildcardImports);
+	}
+
 	public void addForbidModuleImports(ForbidModuleImports forbidModuleImports) {
 		addStepFactory(forbidModuleImports);
 	}
@@ -90,6 +99,27 @@ public class Java extends FormatterFactory {
 
 	public void addCleanthat(CleanthatJava cleanthat) {
 		addStepFactory(cleanthat);
+	}
+
+	@Override
+	protected Optional<Set<File>> getProjectClasspath(FormatterConfig config) {
+		return config.getMavenProject().map(project -> {
+			try {
+				Set<File> classpath = new HashSet<>();
+				// Add compile classpath
+				for (String element : project.getCompileClasspathElements()) {
+					classpath.add(new File(element));
+				}
+				// Add test classpath
+				for (String element : project.getTestClasspathElements()) {
+					classpath.add(new File(element));
+				}
+				return classpath;
+			} catch (DependencyResolutionRequiredException e) {
+				// If we can't resolve dependencies, return empty set
+				return Collections.<File>emptySet();
+			}
+		});
 	}
 
 	private static String fileMask(Path path) {
