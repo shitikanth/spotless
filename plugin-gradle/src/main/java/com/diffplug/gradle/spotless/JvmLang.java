@@ -41,4 +41,12 @@ interface JvmLang {
 		}
 		return union;
 	}
+
+	default SourceSetContainer getSourceSets(Project project, String message) {
+		final JavaPluginExtension javaPluginExtension = project.getExtensions().findByType(JavaPluginExtension.class);
+		if (javaPluginExtension == null) {
+			throw new GradleException(message);
+		}
+		return javaPluginExtension.getSourceSets();
+	}
 }

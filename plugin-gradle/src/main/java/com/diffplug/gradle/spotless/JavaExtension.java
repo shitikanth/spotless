@@ -36,6 +36,7 @@ import com.diffplug.spotless.FormatterStep;
 import com.diffplug.spotless.extra.java.EclipseJdtFormatterStep;
 import com.diffplug.spotless.generic.LicenseHeaderStep;
 import com.diffplug.spotless.java.CleanthatJavaStep;
+import com.diffplug.spotless.java.ExpandWildcardImportsStep;
 import com.diffplug.spotless.java.ForbidModuleImportsStep;
 import com.diffplug.spotless.java.ForbidWildcardImportsStep;
 import com.diffplug.spotless.java.FormatAnnotationsStep;
@@ -161,6 +162,19 @@ public class JavaExtension extends FormatExtension implements HasBuiltinDelimite
 
 	public void forbidWildcardImports() {
 		addStep(ForbidWildcardImportsStep.create());
+	}
+
+	public void expandWildcardImports() {
+		SourceSetContainer sourceSets = getSourceSets(getProject(), "expansion of wildcards requires the 'java' plugin to be applied");
+		Set<File> typeSolverClasspath = new HashSet<>();
+		for (SourceSet sourceSet : sourceSets) {
+			typeSolverClasspath.addAll(sourceSet.getAllJava().getSrcDirs());
+		}
+		getProject().getConfigurations().stream()
+				.filter(config -> config.isCanBeResolved())
+				.flatMap(config -> config.getFiles().stream())
+				.forEach(typeSolverClasspath::add);
+		addStep(ExpandWildcardImportsStep.create(typeSolverClasspath, provisioner()));
 	}
 
 	public void forbidModuleImports() {
