@@ -88,6 +88,10 @@ public class Java extends FormatterFactory {
 		addStepFactory(formatAnnotations);
 	}
 
+	public void addExpandWildcardImports(ExpandWildcardImports expandWildcardImports) {
+		addStepFactory(expandWildcardImports);
+	}
+
 	public void addCleanthat(CleanthatJava cleanthat) {
 		addStepFactory(cleanthat);
 	}
