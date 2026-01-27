@@ -67,16 +67,18 @@ public class ExpandWildcardImports implements FormatterStepFactory {
 
 	private Set<File> resolveDependencies(MavenProject project, RepositorySystem repositorySystem, RepositorySystemSession session) {
 		try {
-			// Convert Maven project dependencies to Aether dependencies
-			List<Dependency> dependencies = project.getDependencies().stream()
-					.map(dep -> new Dependency(
+			// Use the project's already-resolved artifacts (which includes transitives)
+			// and convert them to Aether dependencies for re-resolution
+			// This allows the WorkspaceReader to map reactor modules to target/classes
+			List<Dependency> dependencies = project.getArtifacts().stream()
+					.map(artifact -> new Dependency(
 							new org.eclipse.aether.artifact.DefaultArtifact(
-									dep.getGroupId(),
-									dep.getArtifactId(),
-									dep.getClassifier(),
-									dep.getType(),
-									dep.getVersion()),
-							dep.getScope()))
+									artifact.getGroupId(),
+									artifact.getArtifactId(),
+									artifact.getClassifier(),
+									artifact.getType(),
+									artifact.getVersion()),
+							artifact.getScope()))
 					.collect(Collectors.toList());
 
 			// Create a collect request with all dependencies
@@ -99,7 +101,10 @@ public class ExpandWildcardImports implements FormatterStepFactory {
 					.collect(Collectors.toSet());
 		} catch (DependencyResolutionException e) {
 			// If resolution fails, fall back to using the artifacts already attached to the project
-			// This ensures the build doesn't fail, but may not include reactor dependencies
+			// This ensures the build doesn't fail, but reactor dependencies may not be properly resolved
+			// Log at debug level to help troubleshoot dependency resolution issues
+			System.err.println("Warning: Failed to resolve dependencies using RepositorySystem, " +
+					"falling back to project artifacts. Reactor dependencies may not be properly resolved: " + e.getMessage());
 			return project.getArtifacts().stream()
 					.map(org.apache.maven.artifact.Artifact::getFile)
 					.filter(Objects::nonNull)
