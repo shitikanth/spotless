@@ -21,6 +21,10 @@ import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.maven.project.MavenProject;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+
 import com.diffplug.spotless.LineEnding;
 import com.diffplug.spotless.LintSuppression;
 import com.diffplug.spotless.Provisioner;
@@ -35,9 +39,12 @@ public class FormatterConfig {
 	private final List<FormatterStepFactory> globalStepFactories;
 	private final Optional<String> spotlessSetLicenseHeaderYearsFromGitHistory;
 	private final List<LintSuppression> lintSuppressions;
+	private final MavenProject project;
+	private final RepositorySystem repositorySystem;
+	private final RepositorySystemSession repositorySystemSession;
 
 	public FormatterConfig(File baseDir, String encoding, LineEnding lineEndings, Optional<String> ratchetFrom, Provisioner provisioner,
-			FileLocator fileLocator, List<FormatterStepFactory> globalStepFactories, Optional<String> spotlessSetLicenseHeaderYearsFromGitHistory, List<LintSuppression> lintSuppressions) {
+			FileLocator fileLocator, List<FormatterStepFactory> globalStepFactories, Optional<String> spotlessSetLicenseHeaderYearsFromGitHistory, List<LintSuppression> lintSuppressions, MavenProject project, RepositorySystem repositorySystem, RepositorySystemSession repositorySystemSession) {
 		this.encoding = encoding;
 		this.lineEndings = lineEndings;
 		this.ratchetFrom = ratchetFrom;
@@ -46,6 +53,9 @@ public class FormatterConfig {
 		this.globalStepFactories = globalStepFactories;
 		this.spotlessSetLicenseHeaderYearsFromGitHistory = spotlessSetLicenseHeaderYearsFromGitHistory;
 		this.lintSuppressions = lintSuppressions;
+		this.project = project;
+		this.repositorySystem = repositorySystem;
+		this.repositorySystemSession = repositorySystemSession;
 	}
 
 	public String getEncoding() {
@@ -78,5 +88,17 @@ public class FormatterConfig {
 
 	public List<LintSuppression> getLintSuppressions() {
 		return unmodifiableList(lintSuppressions);
+	}
+
+	public MavenProject getProject() {
+		return project;
+	}
+
+	public RepositorySystem getRepositorySystem() {
+		return repositorySystem;
+	}
+
+	public RepositorySystemSession getRepositorySystemSession() {
+		return repositorySystemSession;
 	}
 }

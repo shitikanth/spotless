@@ -18,6 +18,10 @@ package com.diffplug.spotless.maven;
 import java.nio.charset.Charset;
 import java.util.Optional;
 
+import org.apache.maven.project.MavenProject;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+
 import com.diffplug.spotless.Provisioner;
 
 public class FormatterStepConfig {
@@ -28,14 +32,20 @@ public class FormatterStepConfig {
 	private final Provisioner provisioner;
 	private final FileLocator fileLocator;
 	private final Optional<String> spotlessSetLicenseHeaderYearsFromGitHistory;
+	private final MavenProject project;
+	private final RepositorySystem repositorySystem;
+	private final RepositorySystemSession repositorySystemSession;
 
-	public FormatterStepConfig(Charset encoding, String licenseHeaderDelimiter, Optional<String> ratchetFrom, Provisioner provisioner, FileLocator fileLocator, Optional<String> spotlessSetLicenseHeaderYearsFromGitHistory) {
+	public FormatterStepConfig(Charset encoding, String licenseHeaderDelimiter, Optional<String> ratchetFrom, Provisioner provisioner, FileLocator fileLocator, Optional<String> spotlessSetLicenseHeaderYearsFromGitHistory, MavenProject project, RepositorySystem repositorySystem, RepositorySystemSession repositorySystemSession) {
 		this.encoding = encoding;
 		this.licenseHeaderDelimiter = licenseHeaderDelimiter;
 		this.ratchetFrom = ratchetFrom;
 		this.provisioner = provisioner;
 		this.fileLocator = fileLocator;
 		this.spotlessSetLicenseHeaderYearsFromGitHistory = spotlessSetLicenseHeaderYearsFromGitHistory;
+		this.project = project;
+		this.repositorySystem = repositorySystem;
+		this.repositorySystemSession = repositorySystemSession;
 	}
 
 	public Charset getEncoding() {
@@ -60,5 +70,17 @@ public class FormatterStepConfig {
 
 	public Optional<String> spotlessSetLicenseHeaderYearsFromGitHistory() {
 		return spotlessSetLicenseHeaderYearsFromGitHistory;
+	}
+
+	public MavenProject getProject() {
+		return project;
+	}
+
+	public RepositorySystem getRepositorySystem() {
+		return repositorySystem;
+	}
+
+	public RepositorySystemSession getRepositorySystemSession() {
+		return repositorySystemSession;
 	}
 }
