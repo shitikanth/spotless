@@ -17,11 +17,21 @@ package com.diffplug.spotless.maven.java;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.resolution.DependencyRequest;
+import org.eclipse.aether.resolution.DependencyResolutionException;
+import org.eclipse.aether.resolution.DependencyResult;
 
 import com.diffplug.spotless.FormatterStep;
 import com.diffplug.spotless.java.ExpandWildcardImportsStep;
@@ -47,12 +57,53 @@ public class ExpandWildcardImports implements FormatterStepFactory {
 				.filter(File::exists)
 				.forEach(typeSolverClasspath::add);
 
-		// Add compiled dependencies
-		project.getArtifacts().stream()
-				.map(Artifact::getFile)
-				.filter(Objects::nonNull)
-				.forEach(typeSolverClasspath::add);
+		// Resolve dependencies using Maven's DependencyResolver API
+		// This will properly handle reactor dependencies by including their target/classes directories
+		// via the WorkspaceReader in the RepositorySystemSession
+		typeSolverClasspath.addAll(resolveDependencies(project, config.getRepositorySystem(), config.getRepositorySystemSession()));
 
 		return ExpandWildcardImportsStep.create(typeSolverClasspath, config.getProvisioner());
+	}
+
+	private Set<File> resolveDependencies(MavenProject project, RepositorySystem repositorySystem, RepositorySystemSession session) {
+		try {
+			// Convert Maven project dependencies to Aether dependencies
+			List<Dependency> dependencies = project.getDependencies().stream()
+					.map(dep -> new Dependency(
+							new org.eclipse.aether.artifact.DefaultArtifact(
+									dep.getGroupId(),
+									dep.getArtifactId(),
+									dep.getClassifier(),
+									dep.getType(),
+									dep.getVersion()),
+							dep.getScope()))
+					.collect(Collectors.toList());
+
+			// Create a collect request with all dependencies
+			CollectRequest collectRequest = new CollectRequest();
+			collectRequest.setDependencies(dependencies);
+			collectRequest.setRepositories(project.getRemoteProjectRepositories());
+
+			// Create a dependency request to resolve all artifacts
+			DependencyRequest dependencyRequest = new DependencyRequest(collectRequest, null);
+
+			// Resolve dependencies - this will use the WorkspaceReader in the session
+			// to resolve reactor modules to their target/classes directories
+			DependencyResult result = repositorySystem.resolveDependencies(session, dependencyRequest);
+
+			// Extract the resolved artifact files
+			return result.getArtifactResults().stream()
+					.map(ArtifactResult::getArtifact)
+					.map(Artifact::getFile)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toSet());
+		} catch (DependencyResolutionException e) {
+			// If resolution fails, fall back to using the artifacts already attached to the project
+			// This ensures the build doesn't fail, but may not include reactor dependencies
+			return project.getArtifacts().stream()
+					.map(org.apache.maven.artifact.Artifact::getFile)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toSet());
+		}
 	}
 }

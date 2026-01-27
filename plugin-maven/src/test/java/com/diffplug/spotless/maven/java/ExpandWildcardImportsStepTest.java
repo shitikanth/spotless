@@ -53,9 +53,6 @@ class ExpandWildcardImportsStepTest extends MavenIntegrationHarness {
 	}
 
 	@Test
-	@Disabled("Multi-module reactor builds currently require 'mvn install' on dependency modules first. " +
-			"The implementation uses project.getArtifacts() which returns JAR files, but reactor dependencies " +
-			"need target/classes directories included in typeSolverClasspath before installation.")
 	void testExpandWildcardImportsMultiModule() throws Exception {
 		/*
 		Create a multi-module project with the following structure:
