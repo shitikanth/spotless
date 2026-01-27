@@ -232,6 +232,7 @@ any other maven phase (i.e. compile) then it can be configured as below;
 
     <removeUnusedImports /> <!-- self-explanatory -->
     <forbidWildcardImports /> <!-- yell if any import ends with '*' -->
+    <expandWildcardImports /> <!-- replace wildcard imports with explicit imports -->
     <forbidModuleImports /> <!-- yell if any module imports are found (Java 25+) -->
 
     <formatAnnotations />  <!-- fixes formatting of type annotations, see below -->
@@ -255,6 +256,14 @@ any other maven phase (i.e. compile) then it can be configured as below;
 
 ```xml
 <forbidWildcardImports/>
+```
+
+### expandWildcardImports
+
+Automatically replaces wildcard imports (e.g., `import java.util.*`) with explicit imports for the classes actually used in the code. This step analyzes your source code and project dependencies to determine which specific classes are needed and generates the appropriate import statements.
+
+```xml
+<expandWildcardImports/>
 ```
 
 ### forbidModuleImports
