@@ -102,13 +102,17 @@ public class ExpandWildcardImports implements FormatterStepFactory {
 		} catch (DependencyResolutionException e) {
 			// If resolution fails, fall back to using the artifacts already attached to the project
 			// This ensures the build doesn't fail, but reactor dependencies may not be properly resolved
-			// Log at debug level to help troubleshoot dependency resolution issues
+			// Note: Using System.err as this is a FormatterStepFactory without access to Maven's logger
 			System.err.println("Warning: Failed to resolve dependencies using RepositorySystem, " +
 					"falling back to project artifacts. Reactor dependencies may not be properly resolved: " + e.getMessage());
-			return project.getArtifacts().stream()
-					.map(org.apache.maven.artifact.Artifact::getFile)
-					.filter(Objects::nonNull)
-					.collect(Collectors.toSet());
+			return getFallbackArtifacts(project);
 		}
+	}
+
+	private Set<File> getFallbackArtifacts(MavenProject project) {
+		return project.getArtifacts().stream()
+				.map(org.apache.maven.artifact.Artifact::getFile)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
 	}
 }
